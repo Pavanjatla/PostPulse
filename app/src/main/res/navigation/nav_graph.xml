@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/welcomeScreen2">
+
+    <fragment
+        android:id="@+id/welcomeScreen2"
+        android:name="post.pulse.blogs.homepage.WelcomeScreen"
+        android:label="WelcomeScreen2" >
+        <action
+            android:id="@+id/action_welcomeScreen_to_sectionPage"
+            app:destination="@id/sectionPage" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/sectionPage"
+        android:name="post.pulse.blogs.homepage.SectionsPage"
+        android:label="SectionPage" />
+</navigation>

@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "537986548921",
+    "project_id": "postpulseblogs",
+    "storage_bucket": "postpulseblogs.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:537986548921:android:a233b3ec27d9cc7a604768",
+        "android_client_info": {
+          "package_name": "post.pulse.blogs"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "537986548921-v50ekd6r9r3pt0qqbc7kfddm07751bl4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "post.pulse.blogs",
+            "certificate_hash": "2a9d57e1f4ec44a5984c82521bfb5289bb9e2b30"
+          }
+        },
+        {
+          "client_id": "537986548921-h1r8sl55h1k4ip7uhni576tv80mmc91c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDiKzVpSkYYi1NB9AntUfqaAYUTpGA268s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "537986548921-h1r8sl55h1k4ip7uhni576tv80mmc91c.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

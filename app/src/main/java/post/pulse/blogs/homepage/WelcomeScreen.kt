@@ -1,6 +1,7 @@
 package post.pulse.blogs.homepage
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,6 +21,7 @@ class WelcomeScreen : Fragment(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         name = arguments?.getString("name","pavan")
+        Log.d("RAMKEY", "onCreate: $name")
     }
 
     override fun onCreateView(
@@ -38,8 +40,7 @@ class WelcomeScreen : Fragment(){
         binding?.userName?.text = "Welcome $name"
         binding?.userName?.setOnClickListener {
             navController = findNavController()
-            val bundle = Bundle()
-            navController.navigate(R.id.action_welcomeScreen_to_sectionPage, bundle)
+            navController.navigate(R.id.action_welcomeScreen_to_sectionPage)
         }
     }
 

@@ -10,6 +10,9 @@ import android.widget.Toast
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.findNavController
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
@@ -24,14 +27,12 @@ import post.pulse.blogs.databinding.FragmentLoginBinding
 
 class LoginFragment : Fragment() {
 
-    //add binding
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding
     private lateinit var auth: FirebaseAuth
-
-
     private lateinit var oneTapClient: SignInClient
     private lateinit var signInRequest: BeginSignInRequest
+    private lateinit var navController: NavController
 
 
     override fun onDestroy() {
@@ -49,15 +50,14 @@ class LoginFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
         return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setUpNavigation()
         auth = Firebase.auth
-
         binding?.signInButton?.setSize(SignInButton.SIZE_WIDE)
 
         binding?.signInButton?.setOnClickListener {
@@ -66,8 +66,13 @@ class LoginFragment : Fragment() {
                 progressBar.visibility = View.VISIBLE
                 signInRequest()
             }
-
         }
+    }
+    private fun setUpNavigation() {
+        val navHostFragment =
+            requireActivity().supportFragmentManager.findFragmentById(R.id.navHostFragmentContainer) as NavHostFragment
+        navController = navHostFragment.navController
+
     }
 
 
@@ -78,26 +83,15 @@ class LoginFragment : Fragment() {
             val credential = oneTapClient.getSignInCredentialFromIntent(it.data)
             val idToken = credential.googleIdToken
             if (idToken != null) {
-//                progressDialog.show()
+                binding?.progressBar?.visibility = View.VISIBLE
                 googleSignIn(idToken)
             } else {
-//                progressDialog.dismiss()
-//                DialogUtils.negativeErrorDialog(
-//                    this,
-//                    layoutInflater,
-//                    "Token not found"
-//                )
+                binding?.progressBar?.visibility = View.GONE
                 binding?.signInButton?.isEnabled = true
                 Toast.makeText(requireContext(), "Token not taken", Toast.LENGTH_SHORT).show()
-
             }
         } else {
-//            progressDialog.dismiss()
-//            DialogUtils.negativeErrorDialog(
-//                this,
-//                layoutInflater,
-//                "Something went wrong!"
-//            )
+            binding?.progressBar?.visibility = View.GONE
             binding?.signInButton?.isEnabled = true
 
         }
@@ -109,60 +103,51 @@ class LoginFragment : Fragment() {
             .setGoogleIdTokenRequestOptions(
                 BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
                     .setSupported(true)
-                    // Your server's client ID, not your Android client ID.
                     .setServerClientId(getString(R.string.default_web_client_id))
-                    // Only show accounts previously used to sign in.
                     .setFilterByAuthorizedAccounts(false)
                     .build()
             )
-            // Automatically sign in when exactly one credential is retrieved.
             .setAutoSelectEnabled(true)
             .build()
         oneTapClient.beginSignIn(signInRequest)
             .addOnSuccessListener { result ->
-//                progressDialog.dismiss()
+                binding?.progressBar?.visibility = View.GONE
                 resultLauncher.launch(
                     IntentSenderRequest.Builder(result.pendingIntent.intentSender).build()
                 )
             }
             .addOnFailureListener { e ->
-                // No saved credentials found. Launch the One Tap sign-up flow, or
-                // do nothing and continue presenting the signed-out UI.
                 binding?.signInButton?.isEnabled = true
-//                progressDialog.dismiss()
+                binding?.progressBar?.visibility = View.GONE
                 e.localizedMessage?.let {
                     Log.e("LoginActivity", it)
-//                    DialogUtils.negativeErrorDialog(
-//                        this,
-//                        layoutInflater,
-//                        it
-//                    )
                 }
-                Toast.makeText(requireContext(), e.message+"failed0", Toast.LENGTH_SHORT).show()
-
-
+                Toast.makeText(requireContext(), e.message + "failed0", Toast.LENGTH_SHORT).show()
             }
     }
-
-
     private fun googleSignIn(token: String) {
         val firebaseCredential = GoogleAuthProvider.getCredential(token, null)
-        auth.signInWithCredential(firebaseCredential)
-            .addOnCompleteListener { task ->
+        auth.signInWithCredential(firebaseCredential).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Toast.makeText(requireContext(), task.result.credential.toString()+"success", Toast.LENGTH_SHORT).show()
-                    //checkUserExist()
+                    Toast.makeText(
+                        requireContext(), "Login Successful", Toast.LENGTH_SHORT
+                    ).show()
+                    binding?.progressBar?.visibility = View.GONE
+                    val bundle = Bundle()
+                    bundle.putString("name", auth.currentUser?.displayName)
+                    navController = findNavController()
+                    navController.navigate(R.id.action_loginFragment_to_mainActivity, bundle)
+//                    checkUserExist()
                 } else {
-                    Toast.makeText(requireContext(), task.exception?.localizedMessage+"failed2", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        requireContext(),
+                        task.exception?.localizedMessage + "failed2",
+                        Toast.LENGTH_SHORT
+                    ).show()
 
                     Log.w("LoginActivity", "signInWithCredential:failure", task.exception)
-//                    DialogUtils.negativeErrorDialog(
-//                        this,
-//                        layoutInflater,
-//                        "${task.exception?.localizedMessage}"
-//                    )
                     binding?.signInButton?.isEnabled = true
-//                    progressDialog.dismiss()
+                    binding?.progressBar?.visibility = View.GONE
                 }
 
             }
@@ -177,8 +162,7 @@ class LoginFragment : Fragment() {
 //                    if (task.isSuccessful) {
 //                        val documentSnapshot = task.result
 //                        if (documentSnapshot.exists()) {
-////                            progressDialog.dismiss()
-//                            // Sign in success, update UI with the signed-in user's information
+//                            binding?.progressBar?.visibility = View.GONE
 //                            Log.d("LoginActivity", "signInWithCredential:success")
 //                            val intent = Intent()
 //                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -194,31 +178,26 @@ class LoginFragment : Fragment() {
 //                            )
 //                        ).addOnCompleteListener { task2 ->
 //                            if (task2.isSuccessful) {
-////                                    progressDialog.dismiss()
+//                                binding?.progressBar?.visibility = View.GONE
 //                                val intent = Intent()
 //                                intent.putExtra("isNewUser", true)
 //                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
 //                                startActivity(intent)
 //
 //                            } else {
-////                                    progressDialog.dismiss()
-////                                    DialogUtils.negativeErrorDialog(
-////                                        this,
-////                                        layoutInflater,
-////                                        "Something went wrong!"
-////                                    )
+//                                binding?.progressBar?.visibility = View.GONE
 //                                binding?.signInButton?.isEnabled = true
 //                            }
 //                        }
 //                    }
 //                }
-//        }else {
-////                progressDialog.dismiss()
-//                Toast.makeText(
-//                    requireContext(),
-//                    "Something went wrong",
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//            }
+//        } else {
+//            binding?.progressBar?.visibility = View.GONE
+//            Toast.makeText(
+//                requireContext(),
+//                "Something went wrong",
+//                Toast.LENGTH_SHORT
+//            ).show()
+//        }
 //    }
 }

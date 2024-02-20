@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.datastore.dataStore
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -20,8 +21,10 @@ import com.google.android.gms.common.SignInButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import post.pulse.blogs.R
+import post.pulse.blogs.data.models.UsersData
 import post.pulse.blogs.databinding.FragmentLoginBinding
 
 
@@ -33,6 +36,7 @@ class LoginFragment : Fragment() {
     private lateinit var oneTapClient: SignInClient
     private lateinit var signInRequest: BeginSignInRequest
     private lateinit var navController: NavController
+    private lateinit var usersData: UsersData
 
 
     override fun onDestroy() {
@@ -132,12 +136,34 @@ class LoginFragment : Fragment() {
                     Toast.makeText(
                         requireContext(), "Login Successful", Toast.LENGTH_SHORT
                     ).show()
+
+                    usersData = UsersData(
+                        id = auth.currentUser?.uid?:"",
+                        name = auth.currentUser?.displayName.toString(),
+                        email = auth.currentUser?.email.toString(),
+                        mobile = auth.currentUser?.phoneNumber.toString(),
+                        image = auth.currentUser?.photoUrl.toString()
+                    )
+
+//                    val dataBase = Firebase.firestore
+//                    dataBase.collection("Users")
+//                        .add(usersData)
+//                        .addOnSuccessListener { documentReference ->
+//                            Log.d("LoginActivity", "DocumentSnapshot added with ID: ${documentReference.id}")
+//                        }
+//                        .addOnFailureListener { e ->
+//                            Log.w("LoginActivity", "Error adding document", e)
+//                        }
+
+
                     binding?.progressBar?.visibility = View.GONE
                     val bundle = Bundle()
-                    bundle.putString("name", auth.currentUser?.displayName)
+                    bundle.putParcelable("userData",usersData)
                     navController = findNavController()
                     navController.navigate(R.id.action_loginFragment_to_mainActivity, bundle)
 //                    checkUserExist()
+
+
                 } else {
                     Toast.makeText(
                         requireContext(),

@@ -10,18 +10,20 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import post.pulse.blogs.R
+import post.pulse.blogs.data.models.UsersData
 import post.pulse.blogs.databinding.WelcomeScreenLayoutBinding
 
 class WelcomeScreen : Fragment(){
     private var _binding: WelcomeScreenLayoutBinding? = null
     private val binding get() = _binding
-    private var name : String? = ""
+    private val userData: UsersData by lazy {
+        arguments?.getParcelable("userData") as? UsersData ?: UsersData("","","","","")
+    }
     private lateinit var navController: NavController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        name = arguments?.getString("name","pavan")
-        Log.d("RAMKEY", "onCreate: $name")
+
     }
 
     override fun onCreateView(
@@ -37,7 +39,7 @@ class WelcomeScreen : Fragment(){
         super.onViewCreated(view, savedInstanceState)
 
         setUpNavigation()
-        binding?.userName?.text = "Welcome $name"
+        binding?.userName?.text = "Welcome ${userData.name}"
         binding?.userName?.setOnClickListener {
             navController = findNavController()
             navController.navigate(R.id.action_welcomeScreen_to_sectionPage)
